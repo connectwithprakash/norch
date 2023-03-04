@@ -32,3 +32,42 @@ class CrossEntropyLoss(BaseLoss):
     def __repr__(self):
         return f"{self.__class__.__name__}(reduction=\"{self.reduction}\")"
 
+
+class CrossEntropyWithLogitsLoss(BaseLoss):
+    def __init__(self, reduction='mean'):
+        self.reduction = reduction
+        self.shift_logits = None
+        self.probs = None
+        self.labels = None
+
+    def forward(self, logits, labels):
+        self.labels = labels
+        max_logits = np.max(logits, axis=1, keepdims=True)
+        shifted_logits = logits - max_logits
+        self.shift_logits = shifted_logits
+        log_sum_exp = np.log(
+            np.sum(np.exp(shifted_logits), axis=1, keepdims=True))
+        log_probs = shifted_logits - log_sum_exp
+        self.probs = np.exp(log_probs)
+        nll_loss = -np.sum(labels * log_probs, axis=1)
+        if self.reduction == 'mean':
+            return np.mean(nll_loss)
+        elif self.reduction == 'sum':
+            return np.sum(nll_loss)
+        else:
+            raise ValueError(
+                "Invalid reduction type. Expected 'mean' or 'sum', but got {}".format(self.reduction))
+
+    def backward(self):
+        dlog_softmax = self.probs - self.labels
+        if self.reduction == 'mean':
+            dlog_softmax /= len(self.labels)
+        elif self.reduction == 'sum':
+            pass
+        else:
+            raise ValueError(
+                "Invalid reduction type. Expected 'mean' or 'sum', but got {}".format(self.reduction))
+        return dlog_softmax
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(reduction=\"{self.reduction}\")"
