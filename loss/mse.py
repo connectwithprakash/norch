@@ -3,7 +3,7 @@ import numpy as np
 from .base_loss import BaseLoss
 
 
-class MSE(BaseLoss):
+class MSELoss(BaseLoss):
     def __init__(self, reduction='mean'):
         self.reduction = reduction
         self.input = None
