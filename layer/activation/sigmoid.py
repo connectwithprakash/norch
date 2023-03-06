@@ -1,13 +1,24 @@
 import numpy as np
-
 from norch.layer import Module
 
 
 class Sigmoid(Module):
+    """Sigmoid activation function module."""
+
     def __init__(self):
+        """Initialize the Sigmoid module."""
         self.input = None
 
     def forward(self, input):
+        """
+        Compute the forward pass of the Sigmoid activation function.
+
+        Args:
+            input (ndarray): Input array.
+
+        Returns:
+            ndarray: Output array after applying Sigmoid activation function.
+        """
         self.input = input
         pos_mask = (self.input >= 0)
         neg_mask = (self.input < 0)
@@ -20,8 +31,14 @@ class Sigmoid(Module):
         return self.output
 
     def backward(self, gradwrtoutput):
+        """
+        Compute the backward pass of the Sigmoid activation function.
+
+        Args:
+            gradwrtoutput (ndarray): Gradient of the loss function with respect to the output.
+
+        Returns:
+            ndarray: Gradient of the loss function with respect to the input.
+        """
         grad_input = gradwrtoutput * self.output * (1 - self.output)
         return grad_input
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}()"
